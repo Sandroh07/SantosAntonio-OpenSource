@@ -1,0 +1,36 @@
+name: Portfolio checks
+on: [push, pull_request]
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring
+      - name: UniversalPOS PHP syntax
+        run: find universal-pos -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: UniversalPOS domain tests
+        run: php universal-pos/tests/domain_test.php
+      - name: SmartInventory PHP syntax
+        run: find smart-inventory -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: SmartInventory domain tests
+        run: php smart-inventory/tests/domain_test.php
+  petrocalc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node petrocalc-engineering/tests/calc.test.cjs
+      - run: node petrocalc-engineering/tests/ui_smoke.test.cjs
+  excel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python excel-flow-vba/tests/check_workbook.py

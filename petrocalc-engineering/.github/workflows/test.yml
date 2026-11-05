@@ -1,0 +1,14 @@
+name: Reference calculations
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/calculations.js
+      - run: node --check assets/app.js
+      - run: node tests/calc.test.cjs
+      - run: node tests/ui_smoke.test.cjs

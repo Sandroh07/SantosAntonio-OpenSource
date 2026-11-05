@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+/vendor/
+*.log
+.DS_Store
+.idea/
+.vscode/

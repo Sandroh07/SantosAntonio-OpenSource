@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const c=require('../assets/calculations.js');
+const close=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<=tol*Math.max(1,Math.abs(b)),`${a} ≠ ${b}`);
+close(c.apiFromSG(1),10);close(c.sgFromAPI(35),141.5/166.5);close(c.apiFromSG(c.sgFromAPI(35)),35);
+close(c.bblToM3(1),0.158987294928);close(c.m3ToBbl(c.bblToM3(1250)),1250);
+close(c.scfToM3(1),0.028316846592);close(c.m3ToScf(c.scfToM3(2000)),2000);
+close(c.standardGasVolume({volumeActualM3:1,pressureActualBarA:2,temperatureActualC:0,zActual:1,pressureStandardBarA:1,temperatureStandardC:0,zStandard:1}),2);
+close(c.gorScfPerStb(600000,1000),600);close(c.hydrostaticBar(1000,100),9.80665);
+close(c.pipeVolumeM3(1000,1),Math.PI/4);close(c.oilGrossUsd(100,75),7500);
+close(c.productionBoe(100,600,6),200);
+for(const fn of [()=>c.apiFromSG(0),()=>c.m3ToBbl(-1),()=>c.gorScfPerStb(5,0),()=>c.standardGasVolume({volumeActualM3:10,pressureActualBarA:1,temperatureActualC:-273.15,zActual:1,pressureStandardBarA:1,temperatureStandardC:0,zStandard:1})])assert.throws(fn);
+console.log('PASS: 15 petroleum calculation assertions and invalid-input checks');

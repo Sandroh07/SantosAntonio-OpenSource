@@ -1,0 +1,9 @@
+:root {--ink:#192739;--teal:#087f8c;--accent:#138f9a;--sand:#f2f6f8}
+body{background:var(--sand);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.bg-dark{background:#102535!important}.navbar-brand{letter-spacing:-.04em}.nav-link.active{color:#8fe5e9!important}
+.card{border:1px solid #e3ebef;border-radius:18px;box-shadow:0 8px 26px #0c283010}.btn-primary{background:#0b7b89;border-color:#0b7b89}
+.btn-primary:hover{background:#075f6a;border-color:#075f6a}.metric{font-size:2.1rem;font-weight:750;letter-spacing:-.05em}
+.soft{background:#e5f5f4;color:#11636b}.product-card{cursor:pointer;transition:transform .12s,border-color .12s;height:100%;}
+.product-card:hover{transform:translateY(-2px);border-color:#188c9a}.table>:not(caption)>*>*{padding:.85rem .7rem}
+.receipt{max-width:500px;margin:auto}.donation{background:#eaf8f5;border-radius:16px;padding:1.2rem}
+@media print{body{background:white}.navbar,footer,.no-print{display:none!important}.receipt{max-width:100%}}
