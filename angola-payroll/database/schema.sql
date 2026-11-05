@@ -1,0 +1,71 @@
+-- AngolaPayroll, indicative IRT Group A schedule for 2026; verify all official legal rules.
+CREATE DATABASE IF NOT EXISTS angola_payroll CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE angola_payroll;
+CREATE TABLE IF NOT EXISTS users (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(120) NOT NULL,
+ email VARCHAR(190) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL,
+ role ENUM('admin','payroll','viewer') NOT NULL DEFAULT 'viewer', active TINYINT(1) NOT NULL DEFAULT 1,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS settings (
+ id TINYINT UNSIGNED PRIMARY KEY,
+ company_name VARCHAR(190) NOT NULL DEFAULT 'Your company', tax_year SMALLINT UNSIGNED NOT NULL DEFAULT 2026,
+ inss_employee_rate DECIMAL(6,5) NOT NULL DEFAULT 0.03000,
+ inss_employer_rate DECIMAL(6,5) NOT NULL DEFAULT 0.08000,
+ rules_verified TINYINT(1) NOT NULL DEFAULT 0,
+ rules_notes TEXT NULL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+INSERT IGNORE INTO settings(id,company_name,tax_year) VALUES (1,'Your company',2026);
+CREATE TABLE IF NOT EXISTS tax_brackets (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, tax_year SMALLINT UNSIGNED NOT NULL,
+ lower_bound DECIMAL(16,2) NOT NULL, upper_bound DECIMAL(16,2) NULL,
+ fixed_amount DECIMAL(16,2) NOT NULL, rate DECIMAL(7,5) NOT NULL,
+ UNIQUE KEY ux_year_lower(tax_year,lower_bound), KEY idx_year(tax_year)
+) ENGINE=InnoDB;
+-- Values transcribed from Annex I, Law 14/25 (2026). The published fixed-sum schedule
+-- is discontinuous across some thresholds; never substitute a continuous progressive approximation.
+INSERT IGNORE INTO tax_brackets(tax_year,lower_bound,upper_bound,fixed_amount,rate) VALUES
+ (2026,0,150000,0,0),
+ (2026,150000,200000,12500,0.16),
+ (2026,200000,300000,31250,0.18),
+ (2026,300000,500000,49250,0.19),
+ (2026,500000,1000000,87250,0.20),
+ (2026,1000000,1500000,187250,0.21),
+ (2026,1500000,2000000,292250,0.22),
+ (2026,2000000,2500000,402250,0.23),
+ (2026,2500000,5000000,517250,0.24),
+ (2026,5000000,10000000,1117250,0.245),
+ (2026,10000000,NULL,2342250,0.25);
+CREATE TABLE IF NOT EXISTS employees (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, staff_code VARCHAR(40) NOT NULL UNIQUE,
+ full_name VARCHAR(160) NOT NULL, department VARCHAR(100) NOT NULL DEFAULT '',
+ base_salary DECIMAL(16,2) NOT NULL, taxable_allowance DECIMAL(16,2) NOT NULL DEFAULT 0,
+ exempt_allowance DECIMAL(16,2) NOT NULL DEFAULT 0,
+ social_base DECIMAL(16,2) NULL,
+ active TINYINT(1) NOT NULL DEFAULT 1,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS payroll_runs (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, period CHAR(7) NOT NULL UNIQUE,
+ tax_year SMALLINT UNSIGNED NOT NULL, status ENUM('draft','final') NOT NULL DEFAULT 'draft',
+ created_by BIGINT UNSIGNED NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ finalized_by BIGINT UNSIGNED NULL, finalized_at TIMESTAMP NULL,
+ FOREIGN KEY (created_by) REFERENCES users(id),FOREIGN KEY(finalized_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS payroll_lines (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,run_id BIGINT UNSIGNED NOT NULL,
+ employee_id BIGINT UNSIGNED NOT NULL,staff_code VARCHAR(40) NOT NULL,employee_name VARCHAR(160) NOT NULL,
+ base_salary DECIMAL(16,2) NOT NULL,taxable_allowance DECIMAL(16,2) NOT NULL,
+ exempt_allowance DECIMAL(16,2) NOT NULL,social_base DECIMAL(16,2) NOT NULL,
+ gross DECIMAL(16,2) NOT NULL,taxable_base DECIMAL(16,2) NOT NULL,
+ inss_employee DECIMAL(16,2) NOT NULL,inss_employer DECIMAL(16,2) NOT NULL,
+ irt DECIMAL(16,2) NOT NULL,net DECIMAL(16,2) NOT NULL,employer_cost DECIMAL(16,2) NOT NULL,
+ UNIQUE KEY ux_run_employee(run_id,employee_id),
+ FOREIGN KEY(run_id) REFERENCES payroll_runs(id) ON DELETE CASCADE,
+ FOREIGN KEY(employee_id) REFERENCES employees(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS audit_log (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,
+ event_type VARCHAR(80) NOT NULL,record_id BIGINT UNSIGNED NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(user_id) REFERENCES users(id)
+) ENGINE=InnoDB;

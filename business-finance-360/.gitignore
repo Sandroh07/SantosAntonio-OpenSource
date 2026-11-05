@@ -1,0 +1,5 @@
+/.env
+/vendor/
+/.phpunit.cache/
+/public/uploads/
+/.DS_Store

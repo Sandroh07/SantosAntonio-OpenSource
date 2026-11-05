@@ -1,3 +1,17 @@
+# Release 03 — 2026-11-05
+
+**Added projects 05–06:** `angola-payroll/` and `business-finance-360/`.
+
+- Payroll: employer/employee social rates, 2026 Group A IRT bracket model, configurable allowance treatment, employee register, monthly draft/final runs, CSV, audit and roles. Not certified, no legal guarantee.
+- Finance: account register, cash-based income/expense ledger, atomic transfers, monthly budgets, period locks, management reports, CSV, roles and audit.
+- BusinessFinance Excel dashboard: five sheets, 1,223 spreadsheet formulas and a time-series chart; does not automatically sync with MySQL.
+- Added syntax and domain tests to CI and workbook structural validation.
+- Both apps include their own license, setup README and voluntary donation page.
+
+**Verification performed:** PHP 8.4 lint for new apps; pure calculation tests; Excel workbook zip/XML/formula checks; local HTTP sign-in smoke. **Not performed:** MySQL end-to-end data flows, real payroll reconciliation, legal/regulatory certification, external security audit or production deployment.
+
+---
+
 # Release 02 — November 5, 2026
 
 ## Added

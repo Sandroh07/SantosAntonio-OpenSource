@@ -9,14 +9,16 @@ jobs:
         with:
           php-version: '8.3'
           extensions: pdo_mysql, mbstring
-      - name: UniversalPOS PHP syntax
-        run: find universal-pos -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: UniversalPOS domain tests
-        run: php universal-pos/tests/domain_test.php
-      - name: SmartInventory PHP syntax
-        run: find smart-inventory -name '*.php' -print0 | xargs -0 -n1 php -l
-      - name: SmartInventory domain tests
-        run: php smart-inventory/tests/domain_test.php
+      - name: All PHP applications syntax
+        run: |
+          for folder in universal-pos smart-inventory angola-payroll business-finance-360; do
+            find "$folder" -name '*.php' -print0 | xargs -0 -n1 php -l
+          done
+      - name: All PHP domain tests
+        run: |
+          for folder in universal-pos smart-inventory angola-payroll business-finance-360; do
+            php "$folder/tests/domain_test.php"
+          done
   petrocalc:
     runs-on: ubuntu-latest
     steps:
@@ -34,3 +36,4 @@ jobs:
         with:
           python-version: '3.12'
       - run: python excel-flow-vba/tests/check_workbook.py
+      - run: python business-finance-360/tests/check_workbook.py

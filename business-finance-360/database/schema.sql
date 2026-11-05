@@ -1,0 +1,42 @@
+CREATE DATABASE IF NOT EXISTS business_finance_360 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE business_finance_360;
+CREATE TABLE IF NOT EXISTS users(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,name VARCHAR(120) NOT NULL,email VARCHAR(190) NOT NULL UNIQUE,
+ password_hash VARCHAR(255) NOT NULL,role ENUM('admin','accountant','viewer') NOT NULL DEFAULT 'viewer',
+ active TINYINT(1) NOT NULL DEFAULT 1,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS settings(id TINYINT UNSIGNED PRIMARY KEY,company_name VARCHAR(190) NOT NULL DEFAULT 'Your business',currency_code CHAR(3) NOT NULL DEFAULT 'AOA') ENGINE=InnoDB;
+INSERT IGNORE INTO settings(id) VALUES(1);
+CREATE TABLE IF NOT EXISTS accounts(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,code VARCHAR(40) NOT NULL UNIQUE,name VARCHAR(160) NOT NULL,
+ opening_balance DECIMAL(16,2) NOT NULL DEFAULT 0,active TINYINT NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS categories(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,name VARCHAR(160) NOT NULL,kind ENUM('income','expense') NOT NULL,
+ UNIQUE KEY ux_name_kind(name,kind)
+) ENGINE=InnoDB;
+INSERT IGNORE INTO categories(name,kind) VALUES ('Sales','income'),('Services','income'),('Other income','income'),('Payroll','expense'),('Rent','expense'),('Supplies','expense'),('Utilities','expense'),('Other expense','expense');
+CREATE TABLE IF NOT EXISTS periods(month CHAR(7) PRIMARY KEY,is_locked TINYINT NOT NULL DEFAULT 0,updated_by BIGINT UNSIGNED NULL,updated_at TIMESTAMP NULL,FOREIGN KEY(updated_by) REFERENCES users(id)) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS transactions(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,entry_date DATE NOT NULL,kind ENUM('income','expense') NOT NULL,
+ account_id BIGINT UNSIGNED NOT NULL,category_id BIGINT UNSIGNED NOT NULL,amount DECIMAL(16,2) NOT NULL,
+ description VARCHAR(255) NOT NULL,reference_no VARCHAR(90) NOT NULL DEFAULT '',created_by BIGINT UNSIGNED NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_date(entry_date), KEY idx_account(account_id),
+ FOREIGN KEY(account_id) REFERENCES accounts(id),FOREIGN KEY(category_id) REFERENCES categories(id),FOREIGN KEY(created_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS transfers(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,transfer_date DATE NOT NULL,
+ source_account_id BIGINT UNSIGNED NOT NULL,target_account_id BIGINT UNSIGNED NOT NULL,
+ amount DECIMAL(16,2) NOT NULL,reference_no VARCHAR(90) NOT NULL DEFAULT '',
+ created_by BIGINT UNSIGNED NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(source_account_id) REFERENCES accounts(id),FOREIGN KEY(target_account_id) REFERENCES accounts(id),FOREIGN KEY(created_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS budgets(
+ month CHAR(7) NOT NULL,category_id BIGINT UNSIGNED NOT NULL,planned_amount DECIMAL(16,2) NOT NULL DEFAULT 0,
+ PRIMARY KEY(month,category_id),FOREIGN KEY(category_id) REFERENCES categories(id)
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS audit_log(
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,user_id BIGINT UNSIGNED NOT NULL,event_type VARCHAR(80) NOT NULL,record_id BIGINT UNSIGNED NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
